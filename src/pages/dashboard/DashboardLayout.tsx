@@ -17,6 +17,7 @@ import {
   Menu,
   X,
   Shield,
+  BookOpen,
 } from "lucide-react";
 
 const navigation = [
@@ -27,6 +28,7 @@ const navigation = [
   { name: "Ролі", href: "/app/roles", icon: Shield },
   { name: "Інтеграції", href: "/app/integrations", icon: Link2 },
   { name: "Аудит-лог", href: "/app/audit", icon: FileText },
+  { name: "Документація", href: "/app/docs", icon: BookOpen },
   { name: "Налаштування", href: "/app/settings", icon: Settings },
 ];
 

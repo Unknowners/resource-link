@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { PublicLayout } from "./components/layout/PublicLayout";
 import Roles from "./pages/dashboard/Roles";
+import Documentation from "./pages/dashboard/Documentation";
 import Home from "./pages/Home";
 import Product from "./pages/Product";
 import Features from "./pages/Features";
@@ -82,6 +83,7 @@ const App = () => (
             <Route path="settings" element={<DashboardSettings />} />
             <Route path="profile" element={<Profile />} />
             <Route path="roles" element={<Roles />} />
+            <Route path="docs" element={<Documentation />} />
           </Route>
 
           {/* Super Admin Console (/admin) */}
