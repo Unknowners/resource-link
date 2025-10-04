@@ -18,6 +18,7 @@ import {
   X,
   Shield,
   BookOpen,
+  Briefcase,
 } from "lucide-react";
 
 const navigation = [
@@ -26,6 +27,7 @@ const navigation = [
   { name: "Групи", href: "/app/groups", icon: Users },
   { name: "Команда", href: "/app/staff", icon: UserCog },
   { name: "Ролі", href: "/app/roles", icon: Shield },
+  { name: "Посади", href: "/app/positions", icon: Briefcase },
   { name: "Інтеграції", href: "/app/integrations", icon: Link2 },
   { name: "Аудит-лог", href: "/app/audit", icon: FileText },
   { name: "Документація", href: "/app/docs", icon: BookOpen },

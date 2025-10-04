@@ -296,6 +296,59 @@ export type Database = {
           },
         ]
       }
+      onboarding_materials: {
+        Row: {
+          bucket: string
+          created_at: string | null
+          description: string | null
+          file_name: string
+          file_path: string
+          id: string
+          mime_type: string | null
+          organization_id: string
+          size_bytes: number | null
+          title: string
+          updated_at: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          bucket?: string
+          created_at?: string | null
+          description?: string | null
+          file_name: string
+          file_path: string
+          id?: string
+          mime_type?: string | null
+          organization_id: string
+          size_bytes?: number | null
+          title: string
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          bucket?: string
+          created_at?: string | null
+          description?: string | null
+          file_name?: string
+          file_path?: string
+          id?: string
+          mime_type?: string | null
+          organization_id?: string
+          size_bytes?: number | null
+          title?: string
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_materials_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_members: {
         Row: {
           created_at: string | null
@@ -414,6 +467,146 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      position_edges: {
+        Row: {
+          child_id: string
+          organization_id: string
+          parent_id: string
+        }
+        Insert: {
+          child_id: string
+          organization_id: string
+          parent_id: string
+        }
+        Update: {
+          child_id?: string
+          organization_id?: string
+          parent_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "position_edges_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "positions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "position_edges_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "positions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      position_hierarchy: {
+        Row: {
+          ancestor_id: string
+          depth: number
+          descendant_id: string
+          organization_id: string
+        }
+        Insert: {
+          ancestor_id: string
+          depth: number
+          descendant_id: string
+          organization_id: string
+        }
+        Update: {
+          ancestor_id?: string
+          depth?: number
+          descendant_id?: string
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "position_hierarchy_ancestor_id_fkey"
+            columns: ["ancestor_id"]
+            isOneToOne: false
+            referencedRelation: "positions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "position_hierarchy_descendant_id_fkey"
+            columns: ["descendant_id"]
+            isOneToOne: false
+            referencedRelation: "positions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      position_materials: {
+        Row: {
+          material_id: string
+          organization_id: string
+          position_id: string
+        }
+        Insert: {
+          material_id: string
+          organization_id: string
+          position_id: string
+        }
+        Update: {
+          material_id?: string
+          organization_id?: string
+          position_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "position_materials_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "onboarding_materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "position_materials_position_id_fkey"
+            columns: ["position_id"]
+            isOneToOne: false
+            referencedRelation: "positions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      positions: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          organization_id: string
+          slug: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          slug: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          slug?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "positions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -572,6 +765,45 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_positions: {
+        Row: {
+          assigned_at: string | null
+          id: string
+          organization_id: string
+          position_id: string
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          id?: string
+          organization_id: string
+          position_id: string
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string | null
+          id?: string
+          organization_id?: string
+          position_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_positions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_positions_position_id_fkey"
+            columns: ["position_id"]
+            isOneToOne: false
+            referencedRelation: "positions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
