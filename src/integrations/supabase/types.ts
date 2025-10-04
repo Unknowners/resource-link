@@ -299,6 +299,7 @@ export type Database = {
       organization_members: {
         Row: {
           created_at: string | null
+          custom_role_id: string | null
           id: string
           invitation_status: string | null
           organization_id: string
@@ -308,6 +309,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          custom_role_id?: string | null
           id?: string
           invitation_status?: string | null
           organization_id: string
@@ -317,6 +319,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          custom_role_id?: string | null
           id?: string
           invitation_status?: string | null
           organization_id?: string
@@ -326,7 +329,52 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "organization_members_custom_role_id_fkey"
+            columns: ["custom_role_id"]
+            isOneToOne: false
+            referencedRelation: "organization_roles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "organization_members_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_roles: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          organization_id: string
+          permissions: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          permissions?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          permissions?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_roles_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -373,6 +421,7 @@ export type Database = {
           id: string
           last_name: string | null
           organization_id: string | null
+          requires_onboarding: boolean | null
           updated_at: string | null
         }
         Insert: {
@@ -383,6 +432,7 @@ export type Database = {
           id: string
           last_name?: string | null
           organization_id?: string | null
+          requires_onboarding?: boolean | null
           updated_at?: string | null
         }
         Update: {
@@ -393,6 +443,7 @@ export type Database = {
           id?: string
           last_name?: string | null
           organization_id?: string | null
+          requires_onboarding?: boolean | null
           updated_at?: string | null
         }
         Relationships: [

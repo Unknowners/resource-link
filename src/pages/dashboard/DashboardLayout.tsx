@@ -16,6 +16,7 @@ import {
   Sparkles,
   Menu,
   X,
+  Shield,
 } from "lucide-react";
 
 const navigation = [
@@ -23,6 +24,7 @@ const navigation = [
   { name: "Ресурси", href: "/app/resources", icon: FolderOpen },
   { name: "Групи", href: "/app/groups", icon: Users },
   { name: "Команда", href: "/app/staff", icon: UserCog },
+  { name: "Ролі", href: "/app/roles", icon: Shield },
   { name: "Інтеграції", href: "/app/integrations", icon: Link2 },
   { name: "Аудит-лог", href: "/app/audit", icon: FileText },
   { name: "Налаштування", href: "/app/settings", icon: Settings },
