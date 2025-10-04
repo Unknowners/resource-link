@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { PublicLayout } from "./components/layout/PublicLayout";
-import Roles from "./pages/dashboard/Roles";
+
 import Positions from "./pages/dashboard/Positions";
 import Documentation from "./pages/dashboard/Documentation";
 import Home from "./pages/Home";
@@ -82,9 +82,8 @@ const App = () => (
             <Route path="search" element={<Search />} />
             <Route path="audit" element={<Audit />} />
             <Route path="settings" element={<DashboardSettings />} />
-            <Route path="profile" element={<Profile />} />
-            <Route path="roles" element={<Roles />} />
-            <Route path="positions" element={<Positions />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="positions" element={<Positions />} />
             <Route path="docs" element={<Documentation />} />
           </Route>
 

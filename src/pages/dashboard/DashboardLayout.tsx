@@ -26,7 +26,6 @@ const navigation = [
   { name: "Ресурси", href: "/app/resources", icon: FolderOpen },
   { name: "Групи", href: "/app/groups", icon: Users },
   { name: "Команда", href: "/app/staff", icon: UserCog },
-  { name: "Ролі", href: "/app/roles", icon: Shield },
   { name: "Посади", href: "/app/positions", icon: Briefcase },
   { name: "Інтеграції", href: "/app/integrations", icon: Link2 },
   { name: "Аудит-лог", href: "/app/audit", icon: FileText },
