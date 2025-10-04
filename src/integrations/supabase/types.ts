@@ -389,6 +389,7 @@ export type Database = {
           id: string
           name: string
           plan: string | null
+          slug: string
           status: string | null
           updated_at: string | null
         }
@@ -398,6 +399,7 @@ export type Database = {
           id?: string
           name: string
           plan?: string | null
+          slug: string
           status?: string | null
           updated_at?: string | null
         }
@@ -407,6 +409,7 @@ export type Database = {
           id?: string
           name?: string
           plan?: string | null
+          slug?: string
           status?: string | null
           updated_at?: string | null
         }
@@ -625,6 +628,10 @@ export type Database = {
           p_resource_id?: string
           p_resource_type?: string
         }
+        Returns: string
+      }
+      transliterate_to_slug: {
+        Args: { input_text: string }
         Returns: string
       }
     }
