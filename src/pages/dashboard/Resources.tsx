@@ -136,6 +136,7 @@ export default function Resources() {
         .from('resources')
         .insert({
           organization_id: organizationId,
+          integration_id: formData.integration_id,
           name: formData.name,
           type: formData.type,
           integration: selectedIntegration.name,
