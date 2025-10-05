@@ -31,9 +31,9 @@ const navigation = [
   { name: "Посади", href: "/app/positions", icon: Briefcase },
   { name: "Проекти", href: "/app/projects", icon: FolderKanban },
   { name: "Інтеграції", href: "/app/integrations", icon: Link2 },
+  { name: "Онбординг", href: "/app/onboarding-settings", icon: UserPlus },
   { name: "Аудит-лог", href: "/app/audit", icon: FileText },
   { name: "Документація", href: "/app/docs", icon: BookOpen },
-  { name: "Онбординг", href: "/app/onboarding-settings", icon: UserPlus },
   { name: "Налаштування", href: "/app/settings", icon: Settings },
 ];
 
