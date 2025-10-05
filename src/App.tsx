@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { PublicLayout } from "./components/layout/PublicLayout";
 
 import Positions from "./pages/dashboard/Positions";
+import Projects from "./pages/dashboard/Projects";
 import Documentation from "./pages/dashboard/Documentation";
 import Home from "./pages/Home";
 import Product from "./pages/Product";
@@ -82,8 +83,9 @@ const App = () => (
             <Route path="search" element={<Search />} />
             <Route path="audit" element={<Audit />} />
             <Route path="settings" element={<DashboardSettings />} />
-              <Route path="profile" element={<Profile />} />
-              <Route path="positions" element={<Positions />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="positions" element={<Positions />} />
+            <Route path="projects" element={<Projects />} />
             <Route path="docs" element={<Documentation />} />
           </Route>
 
