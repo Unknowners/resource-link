@@ -20,6 +20,7 @@ import {
   BookOpen,
   Briefcase,
   FolderKanban,
+  UserPlus,
 } from "lucide-react";
 
 const navigation = [
@@ -32,6 +33,7 @@ const navigation = [
   { name: "Інтеграції", href: "/app/integrations", icon: Link2 },
   { name: "Аудит-лог", href: "/app/audit", icon: FileText },
   { name: "Документація", href: "/app/docs", icon: BookOpen },
+  { name: "Онбординг", href: "/app/onboarding-settings", icon: UserPlus },
   { name: "Налаштування", href: "/app/settings", icon: Settings },
 ];
 

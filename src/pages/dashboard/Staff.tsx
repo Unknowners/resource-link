@@ -23,7 +23,10 @@ interface StaffMember {
   status: string;
   invitation_status: string;
   groups: string[];
-  is_pending_invite?: boolean; // Додано для pending запрошень
+  positions: string[];
+  projects: string[];
+  requires_onboarding: boolean;
+  is_pending_invite?: boolean;
 }
 
 interface Group {
@@ -100,7 +103,7 @@ export default function Staff() {
       // Get profiles for all members
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('id, first_name, last_name, email')
+        .select('id, first_name, last_name, email, requires_onboarding')
         .in('id', members.map(m => m.user_id));
 
       if (!profiles) return;
@@ -109,6 +112,18 @@ export default function Staff() {
       const { data: groupMemberships } = await supabase
         .from('group_members')
         .select('user_id, group_id, groups(name)')
+        .in('user_id', members.map(m => m.user_id));
+
+      // Get user positions
+      const { data: userPositions } = await supabase
+        .from('user_positions')
+        .select('user_id, position_id, positions(name)')
+        .in('user_id', members.map(m => m.user_id));
+
+      // Get user projects
+      const { data: userProjects } = await supabase
+        .from('user_projects')
+        .select('user_id, project_id, projects(name)')
         .in('user_id', members.map(m => m.user_id));
 
       // Get pending invitations
@@ -125,6 +140,16 @@ export default function Staff() {
           ?.filter(gm => gm.user_id === profile.id)
           .map(gm => (gm.groups as any)?.name)
           .filter(Boolean) || [];
+        
+        const userPositionsList = userPositions
+          ?.filter(up => up.user_id === profile.id)
+          .map(up => (up.positions as any)?.name)
+          .filter(Boolean) || [];
+
+        const userProjectsList = userProjects
+          ?.filter(up => up.user_id === profile.id)
+          .map(up => (up.projects as any)?.name)
+          .filter(Boolean) || [];
 
         return {
           id: profile.id,
@@ -135,6 +160,9 @@ export default function Staff() {
           status: memberData?.status || 'active',
           invitation_status: memberData?.invitation_status || 'accepted',
           groups: userGroups,
+          positions: userPositionsList,
+          projects: userProjectsList,
+          requires_onboarding: profile.requires_onboarding ?? true,
           is_pending_invite: false
         };
       });
@@ -143,7 +171,7 @@ export default function Staff() {
       if (pendingInvites) {
         pendingInvites.forEach(invite => {
           staffData.push({
-            id: invite.email, // Використовуємо email як тимчасовий ID
+            id: invite.email,
             first_name: null,
             last_name: null,
             email: invite.email,
@@ -151,6 +179,9 @@ export default function Staff() {
             status: 'pending',
             invitation_status: 'pending',
             groups: [],
+            positions: [],
+            projects: [],
+            requires_onboarding: true,
             is_pending_invite: true
           });
         });
@@ -553,8 +584,10 @@ export default function Staff() {
                   <TableHead>Email</TableHead>
                   <TableHead>Роль</TableHead>
                   <TableHead>Статус</TableHead>
-                  <TableHead>Запрошення</TableHead>
+                  <TableHead>Онбординг</TableHead>
                   <TableHead>Групи</TableHead>
+                  <TableHead>Посади</TableHead>
+                  <TableHead>Проекти</TableHead>
                   <TableHead className="text-right">Дії</TableHead>
                 </TableRow>
               </TableHeader>
@@ -582,14 +615,42 @@ export default function Staff() {
                     <TableCell className="text-muted-foreground">{user.email}</TableCell>
                     <TableCell>{getRoleBadge(user.role)}</TableCell>
                     <TableCell>{getStatusBadge(user.status)}</TableCell>
-                    <TableCell>{getInvitationBadge(user.invitation_status)}</TableCell>
+                    <TableCell>
+                      {user.requires_onboarding ? (
+                        <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
+                          Потрібен
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                          Завершено
+                        </Badge>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <div className="flex gap-1 flex-wrap">
-                        {user.groups.map((group, index) => (
+                        {user.groups.length > 0 ? user.groups.map((group, index) => (
                           <Badge key={index} variant="outline" className="text-xs">
                             {group}
                           </Badge>
-                        ))}
+                        )) : <span className="text-muted-foreground text-xs">—</span>}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-1 flex-wrap">
+                        {user.positions.length > 0 ? user.positions.map((position, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {position}
+                          </Badge>
+                        )) : <span className="text-muted-foreground text-xs">—</span>}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-1 flex-wrap">
+                        {user.projects.length > 0 ? user.projects.map((project, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {project}
+                          </Badge>
+                        )) : <span className="text-muted-foreground text-xs">—</span>}
                       </div>
                     </TableCell>
                     <TableCell className="text-right">

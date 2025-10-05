@@ -8,6 +8,7 @@ import { PublicLayout } from "./components/layout/PublicLayout";
 import Positions from "./pages/dashboard/Positions";
 import Projects from "./pages/dashboard/Projects";
 import Documentation from "./pages/dashboard/Documentation";
+import OnboardingSettings from "./pages/dashboard/OnboardingSettings";
 import Home from "./pages/Home";
 import Product from "./pages/Product";
 import Features from "./pages/Features";
@@ -87,6 +88,7 @@ const App = () => (
             <Route path="positions" element={<Positions />} />
             <Route path="projects" element={<Projects />} />
             <Route path="docs" element={<Documentation />} />
+            <Route path="onboarding-settings" element={<OnboardingSettings />} />
           </Route>
 
           {/* Super Admin Console (/admin) */}
