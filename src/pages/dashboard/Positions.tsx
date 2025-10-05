@@ -45,7 +45,8 @@ export default function Positions() {
   const [isMaterialDialogOpen, setIsMaterialDialogOpen] = useState(false);
   const [editingPosition, setEditingPosition] = useState<Position | null>(null);
   const [selectedPosition, setSelectedPosition] = useState<Position | null>(null);
-  const [selectedPositionMaterials, setSelectedPositionMaterials] = useState<Material[]>([]);
+  const [directMaterials, setDirectMaterials] = useState<Material[]>([]);
+  const [inheritedMaterials, setInheritedMaterials] = useState<Material[]>([]);
   const [selectedPositionChildren, setSelectedPositionChildren] = useState<Position[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   
@@ -129,8 +130,11 @@ export default function Positions() {
   const handlePositionClick = async (position: Position) => {
     setSelectedPosition(position);
     
-    // Завантажити матеріали для цієї посади та її предків через ієрархію
-    const { data: positionMaterialLinks, error: materialsError } = await supabase
+    // Отримати предків посади
+    const ancestors = await getPositionAncestors(position.id);
+    
+    // Завантажити матеріали тільки для цієї посади
+    const { data: directLinks, error: directError } = await supabase
       .from("position_materials")
       .select(`
         material_id,
@@ -146,13 +150,49 @@ export default function Positions() {
         )
       `)
       .eq("organization_id", organizationId)
-      .in("position_id", await getPositionAncestors(position.id));
+      .eq("position_id", position.id);
 
-    if (!materialsError && positionMaterialLinks) {
-      const mats = positionMaterialLinks
+    if (!directError && directLinks) {
+      const mats = directLinks
         .map(link => link.onboarding_materials)
         .filter(Boolean) as Material[];
-      setSelectedPositionMaterials(mats);
+      setDirectMaterials(mats);
+    } else {
+      setDirectMaterials([]);
+    }
+
+    // Завантажити успадковані матеріали від батьківських посад
+    const ancestorsWithoutSelf = ancestors.filter(id => id !== position.id);
+    
+    if (ancestorsWithoutSelf.length > 0) {
+      const { data: inheritedLinks, error: inheritedError } = await supabase
+        .from("position_materials")
+        .select(`
+          material_id,
+          onboarding_materials (
+            id,
+            title,
+            description,
+            file_name,
+            file_path,
+            mime_type,
+            size_bytes,
+            created_at
+          )
+        `)
+        .eq("organization_id", organizationId)
+        .in("position_id", ancestorsWithoutSelf);
+
+      if (!inheritedError && inheritedLinks) {
+        const mats = inheritedLinks
+          .map(link => link.onboarding_materials)
+          .filter(Boolean) as Material[];
+        setInheritedMaterials(mats);
+      } else {
+        setInheritedMaterials([]);
+      }
+    } else {
+      setInheritedMaterials([]);
     }
 
     // Завантажити підпорядковані посади
@@ -441,32 +481,61 @@ export default function Positions() {
 
         {selectedPosition ? (
           <>
-            <Card>
-              <CardHeader>
-                <CardTitle>Матеріали для {selectedPosition.name}</CardTitle>
-                <CardDescription>Матеріали, які успадковуються через ієрархію</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {selectedPositionMaterials.length === 0 ? (
-                    <p className="text-muted-foreground text-center py-8">Немає матеріалів</p>
-                  ) : (
-                    selectedPositionMaterials.map((material) => (
-                      <div key={material.id} className="flex items-start gap-3 p-3 border rounded-lg">
-                        <FileText className="h-5 w-5 text-muted-foreground mt-0.5" />
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium">{material.title}</p>
-                          {material.description && (
-                            <p className="text-sm text-muted-foreground">{material.description}</p>
-                          )}
-                          <p className="text-xs text-muted-foreground truncate">{material.file_name}</p>
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Матеріали тільки для {selectedPosition.name}</CardTitle>
+                  <CardDescription>Матеріали, прямо прив'язані до цієї посади</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {directMaterials.length === 0 ? (
+                      <p className="text-muted-foreground text-center py-8">Немає прямих матеріалів</p>
+                    ) : (
+                      directMaterials.map((material) => (
+                        <div key={material.id} className="flex items-start gap-3 p-3 border rounded-lg bg-primary/5">
+                          <FileText className="h-5 w-5 text-primary mt-0.5" />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium">{material.title}</p>
+                            {material.description && (
+                              <p className="text-sm text-muted-foreground">{material.description}</p>
+                            )}
+                            <p className="text-xs text-muted-foreground truncate">{material.file_name}</p>
+                          </div>
                         </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                      ))
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Успадковані матеріали</CardTitle>
+                  <CardDescription>Матеріали від батьківських посад (доступні й дочірнім)</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {inheritedMaterials.length === 0 ? (
+                      <p className="text-muted-foreground text-center py-8">Немає успадкованих матеріалів</p>
+                    ) : (
+                      inheritedMaterials.map((material) => (
+                        <div key={material.id} className="flex items-start gap-3 p-3 border rounded-lg">
+                          <FileText className="h-5 w-5 text-muted-foreground mt-0.5" />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium">{material.title}</p>
+                            {material.description && (
+                              <p className="text-sm text-muted-foreground">{material.description}</p>
+                            )}
+                            <p className="text-xs text-muted-foreground truncate">{material.file_name}</p>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
             <Card>
               <CardHeader>
