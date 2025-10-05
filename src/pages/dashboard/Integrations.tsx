@@ -446,6 +446,36 @@ export default function Integrations() {
     }
   };
 
+  const handleSyncResources = async (integration: Integration) => {
+    try {
+      const loadingToast = toast.loading('Синхронізація ресурсів...');
+      
+      const { data, error } = await supabase.functions.invoke('validate-api-token', {
+        body: {
+          integration_id: integration.id,
+          email: integration.auth_type === 'api_token' ? (integration as any).api_email : '',
+          api_token: integration.auth_type === 'api_token' ? (integration as any).api_token : '',
+          site_url: integration.oauth_authorize_url,
+          integration_type: integration.type,
+        },
+      });
+
+      toast.dismiss(loadingToast);
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast.success('Ресурси синхронізовано');
+        await loadIntegrations();
+      } else {
+        toast.error(data?.message || data?.error || 'Помилка синхронізації');
+      }
+    } catch (error) {
+      console.error('Sync error:', error);
+      toast.error(`Помилка: ${error instanceof Error ? error.message : 'Невідома помилка'}`);
+    }
+  };
+
   const handleConnectIntegration = async (integration: Integration) => {
     if (!integration.oauth_authorize_url || !integration.oauth_client_id) {
       toast.error("OAuth не налаштовано для цієї інтеграції");
@@ -895,6 +925,15 @@ export default function Integrations() {
                         >
                           <RefreshCw className="mr-2 h-4 w-4" />
                           {isUserConnected(integration.id) ? 'Оновити статус' : 'Підключити'}
+                        </Button>
+
+                        <Button 
+                          variant="secondary" 
+                          className="w-full"
+                          onClick={() => handleSyncResources(integration)}
+                        >
+                          <RefreshCw className="mr-2 h-4 w-4" />
+                          Синхронізувати ресурси
                         </Button>
 
                         {isUserConnected(integration.id) && (
