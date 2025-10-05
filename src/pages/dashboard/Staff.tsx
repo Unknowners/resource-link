@@ -334,6 +334,18 @@ export default function Staff() {
     if (!editingUser || !organizationId) return;
 
     try {
+      // Update profile (first_name, last_name, email)
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          first_name: editingUser.first_name,
+          last_name: editingUser.last_name,
+          email: editingUser.email
+        })
+        .eq('id', editingUser.id);
+
+      if (profileError) throw profileError;
+
       // Update role and status
       const { error: updateError } = await supabase
         .from('organization_members')
