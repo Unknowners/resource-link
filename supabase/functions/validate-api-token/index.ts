@@ -269,6 +269,7 @@ Deno.serve(async (req) => {
                         .from('resources')
                         .insert({
                           organization_id: integration.organization_id,
+                          integration_id: integration_id,
                           name: resourceName,
                           type: 'jira_project',
                           integration: integration.name,
@@ -325,6 +326,7 @@ Deno.serve(async (req) => {
                         .from('resources')
                         .insert({
                           organization_id: integration.organization_id,
+                          integration_id: integration_id,
                           name: resourceName,
                           type: 'confluence_space',
                           integration: integration.name,
