@@ -408,6 +408,75 @@ export type Database = {
           },
         ]
       }
+      learning_modules: {
+        Row: {
+          category: string
+          completed: boolean
+          completed_at: string | null
+          content: Json | null
+          created_at: string
+          description: string | null
+          difficulty: string
+          duration: number
+          id: string
+          organization_id: string
+          position_id: string | null
+          resources: Json | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          completed?: boolean
+          completed_at?: string | null
+          content?: Json | null
+          created_at?: string
+          description?: string | null
+          difficulty?: string
+          duration: number
+          id?: string
+          organization_id: string
+          position_id?: string | null
+          resources?: Json | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          completed?: boolean
+          completed_at?: string | null
+          content?: Json | null
+          created_at?: string
+          description?: string | null
+          difficulty?: string
+          duration?: number
+          id?: string
+          organization_id?: string
+          position_id?: string | null
+          resources?: Json | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_modules_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_modules_position_id_fkey"
+            columns: ["position_id"]
+            isOneToOne: false
+            referencedRelation: "positions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       onboarding_materials: {
         Row: {
           bucket: string
@@ -723,6 +792,7 @@ export type Database = {
           id: string
           name: string
           organization_id: string
+          slug: string | null
           status: string | null
           updated_at: string | null
         }
@@ -732,6 +802,7 @@ export type Database = {
           id?: string
           name: string
           organization_id: string
+          slug?: string | null
           status?: string | null
           updated_at?: string | null
         }
@@ -741,6 +812,7 @@ export type Database = {
           id?: string
           name?: string
           organization_id?: string
+          slug?: string | null
           status?: string | null
           updated_at?: string | null
         }
@@ -947,6 +1019,45 @@ export type Database = {
             columns: ["position_id"]
             isOneToOne: false
             referencedRelation: "positions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_projects: {
+        Row: {
+          assigned_at: string | null
+          id: string
+          organization_id: string
+          project_id: string
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          id?: string
+          organization_id: string
+          project_id: string
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string | null
+          id?: string
+          organization_id?: string
+          project_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_projects_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_projects_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
