@@ -991,6 +991,35 @@ export default function Staff() {
 
             <ScrollArea className="flex-1 pr-4">
               <TabsContent value="basic" className="space-y-4 mt-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="edit-first-name">Ім'я</Label>
+                    <Input
+                      id="edit-first-name"
+                      value={editingUser?.first_name || ''}
+                      onChange={(e) => setEditingUser(prev => prev ? {...prev, first_name: e.target.value} : null)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-last-name">Прізвище</Label>
+                    <Input
+                      id="edit-last-name"
+                      value={editingUser?.last_name || ''}
+                      onChange={(e) => setEditingUser(prev => prev ? {...prev, last_name: e.target.value} : null)}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="edit-email">Email</Label>
+                  <Input
+                    id="edit-email"
+                    type="email"
+                    value={editingUser?.email || ''}
+                    onChange={(e) => setEditingUser(prev => prev ? {...prev, email: e.target.value} : null)}
+                  />
+                </div>
+
                 <div>
                   <Label htmlFor="edit-role">Роль</Label>
                   <Select value={editingRole} onValueChange={setEditingRole}>
