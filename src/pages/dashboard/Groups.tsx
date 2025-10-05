@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Users, Plus, Trash2, Settings } from "lucide-react";
+import { Users, Plus, Trash2, Settings, RefreshCw, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -23,6 +23,7 @@ export default function Groups() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isKnowledgeDialogOpen, setIsKnowledgeDialogOpen] = useState(false);
   const [organizationId, setOrganizationId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -122,6 +123,15 @@ export default function Groups() {
     }
   };
 
+  const handleUpdateKnowledge = () => {
+    setIsKnowledgeDialogOpen(true);
+  };
+
+  const handleConfirmUpdate = () => {
+    toast.info("Оновлення бази знань буде доступне незабаром");
+    setIsKnowledgeDialogOpen(false);
+  };
+
   return (
     <div className="p-4 md:p-8 space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
@@ -131,13 +141,18 @@ export default function Groups() {
             Організуйте команду та керуйте доступом до ресурсів
           </p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Створити групу
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleUpdateKnowledge}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Оновити базу знань
+          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Створити групу
+              </Button>
+            </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Створити нову групу</DialogTitle>
@@ -174,7 +189,8 @@ export default function Groups() {
               </Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       {loading ? (
@@ -242,6 +258,46 @@ export default function Groups() {
           ))}
         </div>
       )}
+
+      {/* Knowledge Update Dialog */}
+      <Dialog open={isKnowledgeDialogOpen} onOpenChange={setIsKnowledgeDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Sparkles className="h-6 w-6 text-primary" />
+              </div>
+              <DialogTitle>Оновлення бази знань</DialogTitle>
+            </div>
+            <DialogDescription className="space-y-3 pt-2">
+              <p className="text-base">
+                Автоматичне оновлення бази знань для груп на основі ресурсів та документації.
+              </p>
+              <div className="p-4 bg-muted rounded-lg space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Безкоштовно:</span>
+                  <span className="text-sm text-muted-foreground">20 сторінок</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Платний план:</span>
+                  <span className="text-sm text-muted-foreground">Необмежено</span>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                💡 Функція в розробці. Незабаром ви зможете автоматично оновлювати базу знань для ваших груп.
+              </p>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setIsKnowledgeDialogOpen(false)} className="w-full sm:w-auto">
+              Закрити
+            </Button>
+            <Button onClick={handleConfirmUpdate} className="w-full sm:w-auto">
+              Зрозуміло
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
