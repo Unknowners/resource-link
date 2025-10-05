@@ -35,6 +35,18 @@ interface Group {
   description: string;
 }
 
+interface Position {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+interface Project {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 export default function Staff() {
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,6 +56,10 @@ export default function Staff() {
   const [editingUser, setEditingUser] = useState<StaffMember | null>(null);
   const [allGroups, setAllGroups] = useState<Group[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<Set<string>>(new Set());
+  const [allPositions, setAllPositions] = useState<Position[]>([]);
+  const [selectedPositions, setSelectedPositions] = useState<Set<string>>(new Set());
+  const [allProjects, setAllProjects] = useState<Project[]>([]);
+  const [selectedProjects, setSelectedProjects] = useState<Set<string>>(new Set());
   const [editingRole, setEditingRole] = useState<string>("member");
   const [editingStatus, setEditingStatus] = useState<string>("active");
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
@@ -61,6 +77,8 @@ export default function Staff() {
   useEffect(() => {
     loadStaff();
     loadGroups();
+    loadPositions();
+    loadProjects();
   }, [currentPage]);
 
   const loadStaff = async () => {
@@ -222,6 +240,58 @@ export default function Staff() {
     }
   };
 
+  const loadPositions = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: member } = await supabase
+        .from('organization_members')
+        .select('organization_id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!member) return;
+
+      const { data: positions } = await supabase
+        .from('positions')
+        .select('id, name, slug')
+        .eq('organization_id', member.organization_id);
+
+      if (positions) {
+        setAllPositions(positions);
+      }
+    } catch (error) {
+      console.error('Error loading positions:', error);
+    }
+  };
+
+  const loadProjects = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: member } = await supabase
+        .from('organization_members')
+        .select('organization_id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!member) return;
+
+      const { data: projects } = await supabase
+        .from('projects')
+        .select('id, name, slug')
+        .eq('organization_id', member.organization_id);
+
+      if (projects) {
+        setAllProjects(projects);
+      }
+    } catch (error) {
+      console.error('Error loading projects:', error);
+    }
+  };
+
   const handleEditUser = async (user: StaffMember) => {
     setEditingUser(user);
     setEditingRole(user.role);
@@ -235,6 +305,25 @@ export default function Staff() {
 
     const groupIds = new Set(userGroups?.map(g => g.group_id) || []);
     setSelectedGroups(groupIds);
+
+    // Get current user's positions
+    const { data: userPositions } = await supabase
+      .from('user_positions')
+      .select('position_id')
+      .eq('user_id', user.id);
+
+    const positionIds = new Set(userPositions?.map(p => p.position_id) || []);
+    setSelectedPositions(positionIds);
+
+    // Get current user's projects
+    const { data: userProjects } = await supabase
+      .from('user_projects')
+      .select('project_id')
+      .eq('user_id', user.id);
+
+    const projectIds = new Set(userProjects?.map(p => p.project_id) || []);
+    setSelectedProjects(projectIds);
+
     setIsEditDialogOpen(true);
   };
 
@@ -285,6 +374,70 @@ export default function Staff() {
           .delete()
           .eq('user_id', editingUser.id)
           .in('group_id', groupsToRemove);
+
+        if (removeError) throw removeError;
+      }
+
+      // Handle positions
+      const { data: currentPositions } = await supabase
+        .from('user_positions')
+        .select('position_id')
+        .eq('user_id', editingUser.id);
+
+      const currentPositionIds = new Set(currentPositions?.map(p => p.position_id) || []);
+      const positionsToAdd = Array.from(selectedPositions).filter(id => !currentPositionIds.has(id));
+      const positionsToRemove = Array.from(currentPositionIds).filter(id => !selectedPositions.has(id));
+
+      if (positionsToAdd.length > 0) {
+        const { error: addError } = await supabase
+          .from('user_positions')
+          .insert(positionsToAdd.map(position_id => ({
+            position_id,
+            user_id: editingUser.id,
+            organization_id: organizationId
+          })));
+
+        if (addError) throw addError;
+      }
+
+      if (positionsToRemove.length > 0) {
+        const { error: removeError } = await supabase
+          .from('user_positions')
+          .delete()
+          .eq('user_id', editingUser.id)
+          .in('position_id', positionsToRemove);
+
+        if (removeError) throw removeError;
+      }
+
+      // Handle projects
+      const { data: currentProjects } = await supabase
+        .from('user_projects')
+        .select('project_id')
+        .eq('user_id', editingUser.id);
+
+      const currentProjectIds = new Set(currentProjects?.map(p => p.project_id) || []);
+      const projectsToAdd = Array.from(selectedProjects).filter(id => !currentProjectIds.has(id));
+      const projectsToRemove = Array.from(currentProjectIds).filter(id => !selectedProjects.has(id));
+
+      if (projectsToAdd.length > 0) {
+        const { error: addError } = await supabase
+          .from('user_projects')
+          .insert(projectsToAdd.map(project_id => ({
+            project_id,
+            user_id: editingUser.id,
+            organization_id: organizationId
+          })));
+
+        if (addError) throw addError;
+      }
+
+      if (projectsToRemove.length > 0) {
+        const { error: removeError } = await supabase
+          .from('user_projects')
+          .delete()
+          .eq('user_id', editingUser.id)
+          .in('project_id', projectsToRemove);
 
         if (removeError) throw removeError;
       }
@@ -340,6 +493,26 @@ export default function Staff() {
       newSelectedGroups.add(groupId);
     }
     setSelectedGroups(newSelectedGroups);
+  };
+
+  const togglePosition = (positionId: string) => {
+    const newSelectedPositions = new Set(selectedPositions);
+    if (newSelectedPositions.has(positionId)) {
+      newSelectedPositions.delete(positionId);
+    } else {
+      newSelectedPositions.add(positionId);
+    }
+    setSelectedPositions(newSelectedPositions);
+  };
+
+  const toggleProject = (projectId: string) => {
+    const newSelectedProjects = new Set(selectedProjects);
+    if (newSelectedProjects.has(projectId)) {
+      newSelectedProjects.delete(projectId);
+    } else {
+      newSelectedProjects.add(projectId);
+    }
+    setSelectedProjects(newSelectedProjects);
   };
 
   const handleInviteUser = async () => {
@@ -833,7 +1006,7 @@ export default function Staff() {
 
             <div>
               <Label className="text-base mb-3 block">Групи</Label>
-              <div className="space-y-2 max-h-64 overflow-y-auto border rounded-md p-3">
+              <div className="space-y-2 max-h-48 overflow-y-auto border rounded-md p-3">
                 {allGroups.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-4">
                     Немає доступних груп
@@ -854,6 +1027,60 @@ export default function Staff() {
                         {group.description && (
                           <div className="text-xs text-muted-foreground">{group.description}</div>
                         )}
+                      </label>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-base mb-3 block">Посади</Label>
+              <div className="space-y-2 max-h-48 overflow-y-auto border rounded-md p-3">
+                {allPositions.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    Немає доступних посад
+                  </p>
+                ) : (
+                  allPositions.map((position) => (
+                    <div key={position.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`position-${position.id}`}
+                        checked={selectedPositions.has(position.id)}
+                        onCheckedChange={() => togglePosition(position.id)}
+                      />
+                      <label
+                        htmlFor={`position-${position.id}`}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1"
+                      >
+                        {position.name}
+                      </label>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-base mb-3 block">Проекти</Label>
+              <div className="space-y-2 max-h-48 overflow-y-auto border rounded-md p-3">
+                {allProjects.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    Немає доступних проектів
+                  </p>
+                ) : (
+                  allProjects.map((project) => (
+                    <div key={project.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`project-${project.id}`}
+                        checked={selectedProjects.has(project.id)}
+                        onCheckedChange={() => toggleProject(project.id)}
+                      />
+                      <label
+                        htmlFor={`project-${project.id}`}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1"
+                      >
+                        {project.name}
                       </label>
                     </div>
                   ))
