@@ -28,20 +28,23 @@ BEGIN
 
   RAISE NOTICE 'Using organization: %', v_org_id;
 
-  -- Insert Universe Group IT projects
+  -- Insert Universe Group IT projects based on real products from https://uni.tech/
   INSERT INTO projects (organization_id, name, slug, description, status) VALUES
-  (v_org_id, 'Scan Guru', 'scan-guru', 'Провідний мобільний додаток для сканування документів з AI-функціями. Топ-5 у своїй ніші в App Store з рейтингом 4.6. Частина Guru Apps бізнесу.', 'active'),
-  (v_org_id, 'Translator Guru', 'translator-guru', 'AI-перекладач з підтримкою понад 100 мов. Миттєвий переклад тексту, голосу та зображень. Понад 100М+ завантажень.', 'active'),
-  (v_org_id, 'Cleaner Guru', 'cleaner-guru', 'Утиліта для оптимізації та очищення пристроїв. Звільнення пам''яті та прискорення роботи телефону. Рейтинг 4.6 в App Store.', 'active'),
-  (v_org_id, 'Assist AI', 'assist-ai', 'Персональний AI-асистент для повсякденних завдань. Інтеграція з GPT-4 для розумних відповідей та автоматизації робочих процесів.', 'active'),
-  (v_org_id, 'Visify', 'visify', 'AI-редактор для створення контенту з фото. Нова розробка Universe Group для iOS з передовими AI-технологіями обробки зображень.', 'active'),
-  (v_org_id, 'PDF Guru', 'pdf-guru', 'Онлайн-сервіс для роботи з документами. 100+ млн файлів на рік, підтримка понад 100 інструментів управління документами. Рейтинг Trustpilot 4.1.', 'active'),
-  (v_org_id, 'FORMA Platform', 'forma-platform', 'Веб-платформа для професійної роботи з документами. Використовується в 150+ країнах світу. Власні AI-технології для максимальної якості сервісу.', 'active'),
-  (v_org_id, 'Wisey Learning Platform', 'wisey-learning-platform', 'Веб-платформа для підвищення особистої продуктивності. 300К+ студентів з Tier-1 країн, понад 30 розроблених курсів.', 'active'),
-  (v_org_id, 'Wisey Mobile Ecosystem', 'wisey-mobile-ecosystem', 'Екосистема з 4 мобільних додатків для навчання та розвитку. Курси розроблені за участю експертів UC Berkeley та фахівців з поведінкової психології.', 'active'),
-  (v_org_id, 'R&D Innovation Lab', 'rnd-innovation-lab', 'Внутрішня інноваційна лабораторія для тестування нових продуктів та їх розвитку у глобальні лідери. In-house R&D значно прискорює зростання бізнесу.', 'active'),
-  (v_org_id, 'Guru Apps Analytics', 'guru-apps-analytics', 'Платформа аналітики для відстеження метрик продуктів Guru Apps. Моніторинг 100М+ користувачів з 186 країн світу в реальному часі.', 'active'),
-  (v_org_id, 'FORMA Document AI', 'forma-document-ai', 'AI-движок для розпізнавання та обробки документів. Машинне навчання для автоматичного розпізнавання структури та змісту документів.', 'active')
+  -- Guru Apps Business (100M+ downloads, 186 countries, avg 4.6 rating)
+  (v_org_id, 'Scan Guru', 'scan-guru', 'Провідний мобільний додаток для сканування документів з AI. Топ-5 у своїй ніші в App Store, рейтинг 4.6. Понад 100M+ завантажень по всьому світу.', 'active'),
+  (v_org_id, 'Translator Guru', 'translator-guru', 'AI-перекладач з підтримкою понад 100 мов та природного мовлення. Миттєвий переклад тексту, голосу та зображень. Частина Guru Apps з рейтингом 4.6.', 'active'),
+  (v_org_id, 'Cleaner Guru', 'cleaner-guru', 'Утиліта для оптимізації пристроїв iOS. Звільнення пам''яті, видалення дублікатів та прискорення роботи. Рейтинг 4.6 в App Store.', 'active'),
+  (v_org_id, 'Assist', 'assist', 'Персональний AI-асистент на базі передових мовних моделей. Інтеграція з GPT для розумних відповідей на будь-які питання та завдання.', 'active'),
+  
+  -- FORMA Business (100M+ files per year, 150+ countries, Trustpilot 4.1)
+  (v_org_id, 'PDF Guru', 'pdf-guru', 'Онлайн-сервіс для роботи з PDF та іншими документами. 100+ млн файлів на рік, підтримка понад 100 інструментів. Trustpilot рейтинг 4.1.', 'active'),
+  (v_org_id, 'FORMA Platform', 'forma-platform', 'Комплексна платформа для управління документами з власними AI-технологіями. Використовується професіоналами в 150+ країнах світу.', 'active'),
+  
+  -- Wisey Business (300K+ students from Tier-1 countries, 30+ courses)
+  (v_org_id, 'Wisey', 'wisey', 'Сервіс для підвищення особистої продуктивності. Екосистема з 4 мобільних додатків та веб-платформи. Понад 300К студентів та 30+ розроблених курсів.', 'active'),
+  
+  -- R&D Center (in-house innovation lab)
+  (v_org_id, 'R&D Innovation Lab', 'rnd-innovation-lab', 'Внутрішня інноваційна лабораторія Universe Group для тестування нових продуктів та їх розвитку у глобальні лідери. In-house R&D прискорює зростання бізнесу.', 'active')
   ON CONFLICT DO NOTHING;
 
   -- Get all created project IDs
@@ -49,9 +52,8 @@ BEGIN
   FROM projects
   WHERE organization_id = v_org_id
   AND slug IN (
-    'scan-guru', 'translator-guru', 'cleaner-guru', 'assist-ai', 'visify',
-    'pdf-guru', 'forma-platform', 'wisey-learning-platform', 'wisey-mobile-ecosystem',
-    'rnd-innovation-lab', 'guru-apps-analytics', 'forma-document-ai'
+    'scan-guru', 'translator-guru', 'cleaner-guru', 'assist',
+    'pdf-guru', 'forma-platform', 'wisey', 'rnd-innovation-lab'
   );
 
   -- Get all user IDs from the organization
