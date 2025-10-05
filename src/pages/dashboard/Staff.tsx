@@ -5,7 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Search, Plus, MoreVertical, Trash2, Edit, ChevronLeft, ChevronRight, UserPlus } from "lucide-react";
+import { Search, Plus, MoreVertical, Trash2, Edit, ChevronLeft, ChevronRight, UserPlus, X } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { InviteUserDialog } from "@/components/dashboard/InviteUserDialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -970,162 +973,227 @@ export default function Staff() {
 
       {/* Edit User Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Редагувати користувача</DialogTitle>
             <DialogDescription>
               Управління для {editingUser?.first_name} {editingUser?.last_name}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="edit-role">Роль</Label>
-              <select
-                id="edit-role"
-                className="w-full border rounded-md px-3 py-2 text-sm"
-                value={editingRole}
-                onChange={(e) => setEditingRole(e.target.value)}
-              >
-                <option value="member">Member</option>
-                <option value="owner">Owner</option>
-              </select>
-            </div>
-            
-            <div>
-              <Label htmlFor="edit-status">Статус</Label>
-              <select
-                id="edit-status"
-                className="w-full border rounded-md px-3 py-2 text-sm"
-                value={editingStatus}
-                onChange={(e) => setEditingStatus(e.target.value)}
-              >
-                <option value="active">Активний</option>
-                <option value="blocked">Заблокований</option>
-              </select>
-            </div>
+          
+          <Tabs defaultValue="basic" className="flex-1 overflow-hidden flex flex-col">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="basic">Основне</TabsTrigger>
+              <TabsTrigger value="groups">Групи</TabsTrigger>
+              <TabsTrigger value="positions">Посади</TabsTrigger>
+              <TabsTrigger value="projects">Проекти</TabsTrigger>
+            </TabsList>
 
-            <div>
-              <Label className="text-base mb-3 block">Групи</Label>
-              <div className="space-y-2 max-h-48 overflow-y-auto border rounded-md p-3">
-                {allGroups.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">
-                    Немає доступних груп
-                  </p>
-                ) : (
-                  allGroups.map((group) => (
-                    <div key={group.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`group-${group.id}`}
-                        checked={selectedGroups.has(group.id)}
-                        onCheckedChange={() => toggleGroup(group.id)}
-                      />
-                      <label
-                        htmlFor={`group-${group.id}`}
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1"
-                      >
-                        <div>{group.name}</div>
-                        {group.description && (
-                          <div className="text-xs text-muted-foreground">{group.description}</div>
-                        )}
-                      </label>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-base mb-3 block">Посади</Label>
-              <div className="space-y-2 max-h-48 overflow-y-auto border rounded-md p-3">
-                {allPositions.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">
-                    Немає доступних посад
-                  </p>
-                ) : (
-                  allPositions.map((position) => (
-                    <div key={position.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`position-${position.id}`}
-                        checked={selectedPositions.has(position.id)}
-                        onCheckedChange={() => togglePosition(position.id)}
-                      />
-                      <label
-                        htmlFor={`position-${position.id}`}
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1"
-                      >
-                        {position.name}
-                      </label>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-base mb-3 block">Проекти</Label>
-              <div className="space-y-2 max-h-48 overflow-y-auto border rounded-md p-3">
-                {allProjects.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">
-                    Немає доступних проектів
-                  </p>
-                ) : (
-                  allProjects.map((project) => (
-                    <div key={project.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`project-${project.id}`}
-                        checked={selectedProjects.has(project.id)}
-                        onCheckedChange={() => toggleProject(project.id)}
-                      />
-                      <label
-                        htmlFor={`project-${project.id}`}
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1"
-                      >
-                        {project.name}
-                      </label>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            <div className="border-t pt-4">
-              <div className="flex items-center justify-between mb-3">
-                <Label className="text-base">Змінити пароль</Label>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowPasswordReset(!showPasswordReset)}
-                >
-                  {showPasswordReset ? "Скасувати" : "Змінити пароль"}
-                </Button>
-              </div>
-              {showPasswordReset && (
-                <div className="space-y-2">
-                  <Input
-                    type="password"
-                    placeholder="Новий пароль (мінімум 8 символів)"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                  />
-                  <Button
-                    onClick={handleResetPassword}
-                    className="w-full"
-                    variant="secondary"
-                  >
-                    Встановити новий пароль
-                  </Button>
+            <ScrollArea className="flex-1 pr-4">
+              <TabsContent value="basic" className="space-y-4 mt-4">
+                <div>
+                  <Label htmlFor="edit-role">Роль</Label>
+                  <Select value={editingRole} onValueChange={setEditingRole}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="member">Member</SelectItem>
+                      <SelectItem value="owner">Owner</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-              )}
-            </div>
-            
-            <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-                Скасувати
-              </Button>
-              <Button onClick={handleSaveUser}>
-                Зберегти
-              </Button>
-            </div>
+                
+                <div>
+                  <Label htmlFor="edit-status">Статус</Label>
+                  <Select value={editingStatus} onValueChange={setEditingStatus}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Активний</SelectItem>
+                      <SelectItem value="blocked">Заблокований</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="border-t pt-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <Label className="text-base">Змінити пароль</Label>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowPasswordReset(!showPasswordReset)}
+                    >
+                      {showPasswordReset ? "Скасувати" : "Змінити пароль"}
+                    </Button>
+                  </div>
+                  {showPasswordReset && (
+                    <div className="space-y-2">
+                      <Input
+                        type="password"
+                        placeholder="Новий пароль (мінімум 8 символів)"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                      />
+                      <Button
+                        onClick={handleResetPassword}
+                        className="w-full"
+                        variant="secondary"
+                      >
+                        Встановити новий пароль
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="groups" className="space-y-4 mt-4">
+                <div>
+                  <Label className="text-base mb-3 block">Обрані групи</Label>
+                  <div className="flex flex-wrap gap-2 mb-4 min-h-[40px] p-2 border rounded-md">
+                    {selectedGroups.size === 0 ? (
+                      <span className="text-sm text-muted-foreground">Групи не обрано</span>
+                    ) : (
+                      Array.from(selectedGroups).map(groupId => {
+                        const group = allGroups.find(g => g.id === groupId);
+                        return group ? (
+                          <Badge key={groupId} variant="secondary" className="gap-1">
+                            {group.name}
+                            <X 
+                              className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                              onClick={() => toggleGroup(groupId)}
+                            />
+                          </Badge>
+                        ) : null;
+                      })
+                    )}
+                  </div>
+                  
+                  <Label className="text-sm mb-2 block">Додати групу</Label>
+                  <Select onValueChange={(value) => toggleGroup(value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Оберіть групу..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {allGroups.filter(g => !selectedGroups.has(g.id)).map((group) => (
+                        <SelectItem key={group.id} value={group.id}>
+                          <div>
+                            <div className="font-medium">{group.name}</div>
+                            {group.description && (
+                              <div className="text-xs text-muted-foreground">{group.description}</div>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  {allGroups.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      Немає доступних груп
+                    </p>
+                  )}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="positions" className="space-y-4 mt-4">
+                <div>
+                  <Label className="text-base mb-3 block">Обрані посади</Label>
+                  <div className="flex flex-wrap gap-2 mb-4 min-h-[40px] p-2 border rounded-md">
+                    {selectedPositions.size === 0 ? (
+                      <span className="text-sm text-muted-foreground">Посади не обрано</span>
+                    ) : (
+                      Array.from(selectedPositions).map(positionId => {
+                        const position = allPositions.find(p => p.id === positionId);
+                        return position ? (
+                          <Badge key={positionId} variant="secondary" className="gap-1">
+                            {position.name}
+                            <X 
+                              className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                              onClick={() => togglePosition(positionId)}
+                            />
+                          </Badge>
+                        ) : null;
+                      })
+                    )}
+                  </div>
+                  
+                  <Label className="text-sm mb-2 block">Додати посаду</Label>
+                  <Select onValueChange={(value) => togglePosition(value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Оберіть посаду..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {allPositions.filter(p => !selectedPositions.has(p.id)).map((position) => (
+                        <SelectItem key={position.id} value={position.id}>
+                          {position.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  {allPositions.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      Немає доступних посад
+                    </p>
+                  )}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="projects" className="space-y-4 mt-4">
+                <div>
+                  <Label className="text-base mb-3 block">Обрані проекти</Label>
+                  <div className="flex flex-wrap gap-2 mb-4 min-h-[40px] p-2 border rounded-md">
+                    {selectedProjects.size === 0 ? (
+                      <span className="text-sm text-muted-foreground">Проекти не обрано</span>
+                    ) : (
+                      Array.from(selectedProjects).map(projectId => {
+                        const project = allProjects.find(p => p.id === projectId);
+                        return project ? (
+                          <Badge key={projectId} variant="secondary" className="gap-1">
+                            {project.name}
+                            <X 
+                              className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                              onClick={() => toggleProject(projectId)}
+                            />
+                          </Badge>
+                        ) : null;
+                      })
+                    )}
+                  </div>
+                  
+                  <Label className="text-sm mb-2 block">Додати проект</Label>
+                  <Select onValueChange={(value) => toggleProject(value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Оберіть проект..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {allProjects.filter(p => !selectedProjects.has(p.id)).map((project) => (
+                        <SelectItem key={project.id} value={project.id}>
+                          {project.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  {allProjects.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      Немає доступних проектів
+                    </p>
+                  )}
+                </div>
+              </TabsContent>
+            </ScrollArea>
+          </Tabs>
+          
+          <div className="flex gap-2 justify-end border-t pt-4 mt-4">
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+              Скасувати
+            </Button>
+            <Button onClick={handleSaveUser}>
+              Зберегти
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
