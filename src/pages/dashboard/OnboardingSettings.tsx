@@ -13,6 +13,7 @@ export default function OnboardingSettings() {
   const [videoUrl, setVideoUrl] = useState("");
   const [welcomeText, setWelcomeText] = useState("");
   const [organizationId, setOrganizationId] = useState<string | null>(null);
+  const [templateId, setTemplateId] = useState<string | null>(null);
 
   useEffect(() => {
     loadSettings();
@@ -32,17 +33,22 @@ export default function OnboardingSettings() {
       if (!member) return;
       setOrganizationId(member.organization_id);
 
-      // Завантажуємо налаштування онбордингу з організації
-      const { data: org } = await supabase
-        .from('organizations')
-        .select('onboarding_video_url, onboarding_welcome_text')
-        .eq('id', member.organization_id)
+      // Завантажуємо активний шаблон онбордингу
+      const { data: template } = await supabase
+        .from('onboarding_templates')
+        .select('*')
+        .eq('organization_id', member.organization_id)
+        .eq('is_active', true)
         .single();
 
-      if (org) {
-        setVideoUrl(org.onboarding_video_url || "");
-        setWelcomeText(org.onboarding_welcome_text || 
+      if (template) {
+        setTemplateId(template.id);
+        setWelcomeText(template.script_template || 
           "Вітаємо, {first_name}!\n\nРаді бачити вас в нашій команді на посаді {position}.\n\nДля початку роботи перегляньте це відео:");
+        // Якщо є поле для URL відео в шаблоні, можна його також завантажити
+      } else {
+        // Дефолтний текст якщо немає шаблону
+        setWelcomeText("Вітаємо, {first_name}!\n\nРаді бачити вас в нашій команді на посаді {position}.\n\nДля початку роботи перегляньте це відео:");
       }
     } catch (error) {
       console.error('Error loading settings:', error);
@@ -56,16 +62,37 @@ export default function OnboardingSettings() {
     try {
       setLoading(true);
       
-      // Зберігаємо налаштування в базу даних
-      const { error } = await supabase
-        .from('organizations')
-        .update({
-          onboarding_video_url: videoUrl,
-          onboarding_welcome_text: welcomeText
-        })
-        .eq('id', organizationId);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-      if (error) throw error;
+      if (templateId) {
+        // Оновлюємо існуючий шаблон
+        const { error } = await supabase
+          .from('onboarding_templates')
+          .update({
+            script_template: welcomeText,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', templateId);
+
+        if (error) throw error;
+      } else {
+        // Створюємо новий шаблон
+        const { data: newTemplate, error } = await supabase
+          .from('onboarding_templates')
+          .insert({
+            organization_id: organizationId,
+            title: 'Вітальний шаблон',
+            script_template: welcomeText,
+            is_active: true,
+            created_by: user.id
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        if (newTemplate) setTemplateId(newTemplate.id);
+      }
 
       toast.success("Налаштування онбордингу збережено");
     } catch (error) {
