@@ -131,6 +131,47 @@ export type Database = {
           },
         ]
       }
+      google_calendar_credentials: {
+        Row: {
+          access_token: string
+          created_at: string
+          expires_at: string
+          id: string
+          organization_id: string
+          refresh_token: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          organization_id: string
+          refresh_token?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          organization_id?: string
+          refresh_token?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "google_calendar_credentials_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       group_members: {
         Row: {
           created_at: string | null
@@ -525,6 +566,7 @@ export type Database = {
         Row: {
           created_at: string
           duration: number
+          google_calendar_event_id: string | null
           id: string
           module_id: string
           notes: string | null
@@ -540,6 +582,7 @@ export type Database = {
         Insert: {
           created_at?: string
           duration: number
+          google_calendar_event_id?: string | null
           id?: string
           module_id: string
           notes?: string | null
@@ -555,6 +598,7 @@ export type Database = {
         Update: {
           created_at?: string
           duration?: number
+          google_calendar_event_id?: string | null
           id?: string
           module_id?: string
           notes?: string | null
@@ -726,6 +770,8 @@ export type Database = {
         Row: {
           created_at: string | null
           domain: string | null
+          google_calendar_client_id: string | null
+          google_calendar_client_secret: string | null
           id: string
           name: string
           onboarding_video_url: string | null
@@ -738,6 +784,8 @@ export type Database = {
         Insert: {
           created_at?: string | null
           domain?: string | null
+          google_calendar_client_id?: string | null
+          google_calendar_client_secret?: string | null
           id?: string
           name: string
           onboarding_video_url?: string | null
@@ -750,6 +798,8 @@ export type Database = {
         Update: {
           created_at?: string | null
           domain?: string | null
+          google_calendar_client_id?: string | null
+          google_calendar_client_secret?: string | null
           id?: string
           name?: string
           onboarding_video_url?: string | null
@@ -1156,10 +1206,15 @@ export type Database = {
       }
       team_ideas: {
         Row: {
+          archived: boolean | null
+          comments: Json | null
           content: string
           created_at: string
           id: string
+          karma: number | null
           organization_id: string
+          project_id: string | null
+          scheduled_reminder_date: string | null
           status: string
           suggestion: string | null
           title: string
@@ -1167,10 +1222,15 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          archived?: boolean | null
+          comments?: Json | null
           content: string
           created_at?: string
           id?: string
+          karma?: number | null
           organization_id: string
+          project_id?: string | null
+          scheduled_reminder_date?: string | null
           status?: string
           suggestion?: string | null
           title: string
@@ -1178,10 +1238,15 @@ export type Database = {
           user_id: string
         }
         Update: {
+          archived?: boolean | null
+          comments?: Json | null
           content?: string
           created_at?: string
           id?: string
+          karma?: number | null
           organization_id?: string
+          project_id?: string | null
+          scheduled_reminder_date?: string | null
           status?: string
           suggestion?: string | null
           title?: string
@@ -1194,6 +1259,20 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_ideas_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_ideas_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
