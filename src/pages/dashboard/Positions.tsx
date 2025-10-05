@@ -29,16 +29,24 @@ interface Material {
   created_at: string;
 }
 
+interface PositionEdge {
+  parent_id: string;
+  child_id: string;
+}
+
 export default function Positions() {
   const [positions, setPositions] = useState<Position[]>([]);
   const [allPositions, setAllPositions] = useState<Position[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
+  const [positionEdges, setPositionEdges] = useState<PositionEdge[]>([]);
   const [loading, setLoading] = useState(true);
   const [organizationId, setOrganizationId] = useState<string>("");
   const [isPositionDialogOpen, setIsPositionDialogOpen] = useState(false);
   const [isMaterialDialogOpen, setIsMaterialDialogOpen] = useState(false);
   const [editingPosition, setEditingPosition] = useState<Position | null>(null);
-  const [selectedPositionId, setSelectedPositionId] = useState<string>("");
+  const [selectedPosition, setSelectedPosition] = useState<Position | null>(null);
+  const [selectedPositionMaterials, setSelectedPositionMaterials] = useState<Material[]>([]);
+  const [selectedPositionChildren, setSelectedPositionChildren] = useState<Position[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   
   const [positionForm, setPositionForm] = useState({
@@ -74,7 +82,8 @@ export default function Positions() {
 
       await Promise.all([
         loadPositions(profile.organization_id),
-        loadMaterials(profile.organization_id)
+        loadMaterials(profile.organization_id),
+        loadPositionEdges(profile.organization_id)
       ]);
     } catch (error) {
       console.error("Error loading data:", error);
@@ -105,6 +114,67 @@ export default function Positions() {
 
     if (error) throw error;
     setMaterials(data || []);
+  };
+
+  const loadPositionEdges = async (orgId: string) => {
+    const { data, error } = await supabase
+      .from("position_edges")
+      .select("parent_id, child_id")
+      .eq("organization_id", orgId);
+
+    if (error) throw error;
+    setPositionEdges(data || []);
+  };
+
+  const handlePositionClick = async (position: Position) => {
+    setSelectedPosition(position);
+    
+    // Завантажити матеріали для цієї посади та її предків через ієрархію
+    const { data: positionMaterialLinks, error: materialsError } = await supabase
+      .from("position_materials")
+      .select(`
+        material_id,
+        onboarding_materials (
+          id,
+          title,
+          description,
+          file_name,
+          file_path,
+          mime_type,
+          size_bytes,
+          created_at
+        )
+      `)
+      .eq("organization_id", organizationId)
+      .in("position_id", await getPositionAncestors(position.id));
+
+    if (!materialsError && positionMaterialLinks) {
+      const mats = positionMaterialLinks
+        .map(link => link.onboarding_materials)
+        .filter(Boolean) as Material[];
+      setSelectedPositionMaterials(mats);
+    }
+
+    // Завантажити підпорядковані посади
+    const childIds = positionEdges
+      .filter(edge => edge.parent_id === position.id)
+      .map(edge => edge.child_id);
+    
+    const children = allPositions.filter(pos => childIds.includes(pos.id));
+    setSelectedPositionChildren(children);
+  };
+
+  const getPositionAncestors = async (positionId: string): Promise<string[]> => {
+    // Отримати всіх предків через position_hierarchy
+    const { data, error } = await supabase
+      .from("position_hierarchy")
+      .select("ancestor_id")
+      .eq("organization_id", organizationId)
+      .eq("descendant_id", positionId);
+
+    if (error || !data) return [positionId];
+    
+    return [...new Set([positionId, ...data.map(h => h.ancestor_id)])];
   };
 
   const handleCreatePosition = () => {
@@ -325,11 +395,11 @@ export default function Positions() {
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-3 gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Посади</CardTitle>
-            <CardDescription>Список усіх посад в організації</CardDescription>
+            <CardDescription>Оберіть посаду для перегляду деталей</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -337,16 +407,28 @@ export default function Positions() {
                 <p className="text-muted-foreground text-center py-8">Немає посад</p>
               ) : (
                 positions.map((position) => (
-                  <div key={position.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div 
+                    key={position.id} 
+                    className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-colors hover:bg-accent ${
+                      selectedPosition?.id === position.id ? 'bg-accent border-primary' : ''
+                    }`}
+                    onClick={() => handlePositionClick(position)}
+                  >
                     <div>
                       <p className="font-medium">{position.name}</p>
                       <p className="text-sm text-muted-foreground">{position.slug}</p>
                     </div>
                     <div className="flex gap-2">
-                      <Button size="sm" variant="ghost" onClick={() => handleEditPosition(position)}>
+                      <Button size="sm" variant="ghost" onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditPosition(position);
+                      }}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button size="sm" variant="ghost" onClick={() => handleDeletePosition(position.id)}>
+                      <Button size="sm" variant="ghost" onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeletePosition(position.id);
+                      }}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -357,31 +439,69 @@ export default function Positions() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Матеріали</CardTitle>
-            <CardDescription>Завантажені файли для онбордингу</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {materials.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">Немає матеріалів</p>
-              ) : (
-                materials.map((material) => (
-                  <div key={material.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <FileText className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium">{material.title}</p>
-                        <p className="text-xs text-muted-foreground">{material.file_name}</p>
+        {selectedPosition ? (
+          <>
+            <Card>
+              <CardHeader>
+                <CardTitle>Матеріали для {selectedPosition.name}</CardTitle>
+                <CardDescription>Матеріали, які успадковуються через ієрархію</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {selectedPositionMaterials.length === 0 ? (
+                    <p className="text-muted-foreground text-center py-8">Немає матеріалів</p>
+                  ) : (
+                    selectedPositionMaterials.map((material) => (
+                      <div key={material.id} className="flex items-start gap-3 p-3 border rounded-lg">
+                        <FileText className="h-5 w-5 text-muted-foreground mt-0.5" />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium">{material.title}</p>
+                          {material.description && (
+                            <p className="text-sm text-muted-foreground">{material.description}</p>
+                          )}
+                          <p className="text-xs text-muted-foreground truncate">{material.file_name}</p>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Підпорядковані посади</CardTitle>
+                <CardDescription>Посади, що звітують до {selectedPosition.name}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {selectedPositionChildren.length === 0 ? (
+                    <p className="text-muted-foreground text-center py-8">Немає підпорядкованих</p>
+                  ) : (
+                    selectedPositionChildren.map((child) => (
+                      <div 
+                        key={child.id} 
+                        className="p-3 border rounded-lg cursor-pointer hover:bg-accent transition-colors"
+                        onClick={() => handlePositionClick(child)}
+                      >
+                        <p className="font-medium">{child.name}</p>
+                        <p className="text-sm text-muted-foreground">{child.description || child.slug}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        ) : (
+          <Card className="lg:col-span-2">
+            <CardContent className="pt-6">
+              <p className="text-muted-foreground text-center py-12">
+                Оберіть посаду зліва, щоб побачити її матеріали та підпорядковані посади
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       <Dialog open={isPositionDialogOpen} onOpenChange={setIsPositionDialogOpen}>
