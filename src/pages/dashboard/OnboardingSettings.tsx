@@ -35,17 +35,15 @@ export default function OnboardingSettings() {
       // Завантажуємо налаштування онбордингу з організації
       const { data: org } = await supabase
         .from('organizations')
-        .select('*')
+        .select('onboarding_video_url, onboarding_welcome_text')
         .eq('id', member.organization_id)
         .single();
 
-      // Поки що зберігаємо в localStorage, пізніше можна перенести в БД
-      const savedVideoUrl = localStorage.getItem(`onboarding_video_${member.organization_id}`) || "";
-      const savedWelcomeText = localStorage.getItem(`onboarding_text_${member.organization_id}`) || 
-        "Вітаємо, {first_name}!\n\nРаді бачити вас в нашій команді на посаді {position}.\n\nДля початку роботи перегляньте це відео:";
-      
-      setVideoUrl(savedVideoUrl);
-      setWelcomeText(savedWelcomeText);
+      if (org) {
+        setVideoUrl(org.onboarding_video_url || "");
+        setWelcomeText(org.onboarding_welcome_text || 
+          "Вітаємо, {first_name}!\n\nРаді бачити вас в нашій команді на посаді {position}.\n\nДля початку роботи перегляньте це відео:");
+      }
     } catch (error) {
       console.error('Error loading settings:', error);
       toast.error("Помилка завантаження налаштувань");
@@ -58,9 +56,16 @@ export default function OnboardingSettings() {
     try {
       setLoading(true);
       
-      // Зберігаємо налаштування
-      localStorage.setItem(`onboarding_video_${organizationId}`, videoUrl);
-      localStorage.setItem(`onboarding_text_${organizationId}`, welcomeText);
+      // Зберігаємо налаштування в базу даних
+      const { error } = await supabase
+        .from('organizations')
+        .update({
+          onboarding_video_url: videoUrl,
+          onboarding_welcome_text: welcomeText
+        })
+        .eq('id', organizationId);
+
+      if (error) throw error;
 
       toast.success("Налаштування онбордингу збережено");
     } catch (error) {

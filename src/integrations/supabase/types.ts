@@ -477,6 +477,69 @@ export type Database = {
           },
         ]
       }
+      learning_schedule: {
+        Row: {
+          created_at: string
+          duration: number
+          id: string
+          module_id: string
+          notes: string | null
+          organization_id: string
+          reminder_enabled: boolean | null
+          reminder_sent: boolean | null
+          scheduled_date: string
+          scheduled_time: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration: number
+          id?: string
+          module_id: string
+          notes?: string | null
+          organization_id: string
+          reminder_enabled?: boolean | null
+          reminder_sent?: boolean | null
+          scheduled_date: string
+          scheduled_time?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          duration?: number
+          id?: string
+          module_id?: string
+          notes?: string | null
+          organization_id?: string
+          reminder_enabled?: boolean | null
+          reminder_sent?: boolean | null
+          scheduled_date?: string
+          scheduled_time?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_schedule_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "learning_modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_schedule_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       onboarding_materials: {
         Row: {
           bucket: string
@@ -530,6 +593,53 @@ export type Database = {
           },
         ]
       }
+      onboarding_templates: {
+        Row: {
+          avatar_id: string | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          is_active: boolean | null
+          organization_id: string
+          script_template: string
+          title: string
+          updated_at: string | null
+          voice_id: string | null
+        }
+        Insert: {
+          avatar_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          organization_id: string
+          script_template: string
+          title: string
+          updated_at?: string | null
+          voice_id?: string | null
+        }
+        Update: {
+          avatar_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          organization_id?: string
+          script_template?: string
+          title?: string
+          updated_at?: string | null
+          voice_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_templates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_members: {
         Row: {
           created_at: string | null
@@ -574,6 +684,8 @@ export type Database = {
           domain: string | null
           id: string
           name: string
+          onboarding_video_url: string | null
+          onboarding_welcome_text: string | null
           plan: string | null
           slug: string
           status: string | null
@@ -584,6 +696,8 @@ export type Database = {
           domain?: string | null
           id?: string
           name: string
+          onboarding_video_url?: string | null
+          onboarding_welcome_text?: string | null
           plan?: string | null
           slug: string
           status?: string | null
@@ -594,6 +708,8 @@ export type Database = {
           domain?: string | null
           id?: string
           name?: string
+          onboarding_video_url?: string | null
+          onboarding_welcome_text?: string | null
           plan?: string | null
           slug?: string
           status?: string | null
@@ -819,6 +935,60 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "projects_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_results: {
+        Row: {
+          answers: Json
+          completed_at: string
+          created_at: string
+          id: string
+          module_id: string
+          organization_id: string
+          passed: boolean
+          score: number
+          total_questions: number
+          user_id: string
+        }
+        Insert: {
+          answers: Json
+          completed_at?: string
+          created_at?: string
+          id?: string
+          module_id: string
+          organization_id: string
+          passed?: boolean
+          score: number
+          total_questions: number
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          completed_at?: string
+          created_at?: string
+          id?: string
+          module_id?: string
+          organization_id?: string
+          passed?: boolean
+          score?: number
+          total_questions?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_results_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "learning_modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_results_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
